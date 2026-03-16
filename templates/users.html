@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<div class="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}"><i class="fas fa-info-circle"></i> {{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <h1><i class="fas fa-users" style="color:var(--purple)"></i> User Management</h1>
+      <p>Manage system users and their roles.</p>
+    </div>
+    <a href="/users/add" class="btn btn-blue"><i class="fas fa-user-plus"></i> Add New User</a>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Username</th><th>Email</th><th>Role</th>
+              <th>Last Login</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td style="color:var(--muted)">{{ u.id }}</td>
+            <td>
+              <strong>{{ u.username }}</strong>
+              {% if u.id == session.user_id %}
+                <span style="font-size:.72rem;color:var(--cyan)">(you)</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--muted);font-size:.85rem">{{ u.email }}</td>
+            <td><span class="badge badge-{{ u.role }}">{{ u.role }}</span></td>
+            <td style="color:var(--muted);font-size:.82rem">{{ u.last_login or '—' }}</td>
+            <td style="color:var(--muted);font-size:.82rem">{{ u.created_at }}</td>
+            <td>
+              <span class="badge" style="
+                {% if u.is_active %}background:#10b98120;color:#6ee7b7;border:1px solid #10b98140
+                {% else %}background:#ef444420;color:#fca5a5;border:1px solid #ef444440{% endif %}">
+                {{ 'Active' if u.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              {% if u.id != session.user_id %}
+              <a href="/users/toggle/{{ u.id }}"
+                 class="btn {{ 'btn-ghost' if u.is_active else 'btn-green' }}"
+                 style="padding:5px 10px;font-size:.78rem;margin-right:4px">
+                <i class="fas fa-{{ 'ban' if u.is_active else 'check' }}"></i>
+                {{ 'Deactivate' if u.is_active else 'Activate' }}
+              </a>
+              <a href="/users/delete/{{ u.id }}"
+                 class="btn btn-red"
+                 style="padding:5px 10px;font-size:.78rem"
+                 onclick="return confirm('Delete user {{ u.username }}?')">
+                <i class="fas fa-trash"></i>
+              </a>
+              {% else %}
+              <span style="color:var(--muted);font-size:.8rem">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Role legend -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title"><i class="fas fa-info-circle" style="color:var(--cyan)"></i> Role Permissions</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div style="padding:14px;background:#111827;border-radius:9px">
+        <span class="badge badge-admin" style="margin-bottom:8px;display:inline-block">admin</span>
+        <p style="font-size:.83rem;color:var(--muted)">Full access — manage users, view all reports, start counting</p>
+      </div>
+      <div style="padding:14px;background:#111827;border-radius:9px">
+        <span class="badge badge-operator" style="margin-bottom:8px;display:inline-block">operator</span>
+        <p style="font-size:.83rem;color:var(--muted)">Start counting sessions, view own reports, upload videos</p>
+      </div>
+      <div style="padding:14px;background:#111827;border-radius:9px">
+        <span class="badge badge-viewer" style="margin-bottom:8px;display:inline-block">viewer</span>
+        <p style="font-size:.83rem;color:var(--muted)">View dashboard and reports only — cannot start sessions</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}"><i class="fas fa-info-circle"></i> {{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="page-header">
+    <h1><i class="fas fa-file-csv" style="color:var(--green)"></i> Session Reports</h1>
+    <p>View, filter, download and manage all counting session logs.</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><i class="fas fa-filter" style="color:var(--orange)"></i> Filter Reports</div>
+    <form method="GET" action="/reports" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <label class="form-label">Year</label>
+        <select name="year" class="form-control" style="width:120px">
+          <option value="">All Years</option>
+          {% for y in years %}
+          <option value="{{ y }}" {% if f_year==y %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Month</label>
+        <select name="month" class="form-control" style="width:140px">
+          <option value="">All Months</option>
+          {% for m in [('01','January'),('02','February'),('03','March'),('04','April'),
+                       ('05','May'),('06','June'),('07','July'),('08','August'),
+                       ('09','September'),('10','October'),('11','November'),('12','December')] %}
+          <option value="{{ m[0] }}" {% if f_month==m[0] or f_month==m[0].lstrip('0') %}selected{% endif %}>{{ m[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Specific Date</label>
+        <input type="date" name="date" class="form-control" style="width:160px" value="{{ f_date }}"/>
+      </div>
+      <div>
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control" style="width:130px">
+          <option value="">All Status</option>
+          <option value="done"    {% if f_status=='done'    %}selected{% endif %}>Done</option>
+          <option value="running" {% if f_status=='running' %}selected{% endif %}>Running</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-blue"><i class="fas fa-search"></i> Filter</button>
+      {% if f_year or f_month or f_date or f_status %}
+      <a href="/reports" class="btn btn-ghost"><i class="fas fa-times"></i> Clear</a>
+      {% endif %}
+    </form>
+    {% if f_year or f_month or f_date or f_status %}
+    <div style="margin-top:10px;font-size:.83rem;color:var(--cyan)">
+      <i class="fas fa-info-circle"></i>
+      Showing <strong>{{ sessions|length }}</strong> filtered result(s)
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Session Name</th><th>Source</th><th>User</th>
+            <th>Total</th><th>IN</th><th>OUT</th><th>Status</th><th>Started</th><th>CSV</th>
+            {% if session.role == 'admin' %}<th>Delete</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in sessions %}
+          <tr>
+            <td style="color:var(--muted)">{{ s.id }}</td>
+            <td><strong>{{ s.session_name }}</strong></td>
+            <td style="font-size:.82rem;color:var(--muted)">
+              <i class="fas fa-{% if s.source_type=='video' %}film{% else %}video{% endif %}"></i> {{ s.source_type }}
+            </td>
+            <td>{{ s.username }}</td>
+            <td><strong style="color:var(--green)">{{ s.total_count }}</strong></td>
+            <td style="color:var(--blue)">{{ s.count_in }}</td>
+            <td style="color:var(--orange)">{{ s.count_out }}</td>
+            <td>
+              <span class="badge" style="{% if s.status=='done' %}background:#10b98120;color:#6ee7b7;border:1px solid #10b98140{% else %}background:#3b82f620;color:#93c5fd;border:1px solid #3b82f640{% endif %}">
+                {{ s.status }}
+              </span>
+            </td>
+            <td style="color:var(--muted);font-size:.82rem">{{ s.started_at }}</td>
+            <td>
+              {% if s.csv_path %}
+              <a href="/reports/download/{{ s.id }}" class="btn btn-ghost" style="padding:5px 12px;font-size:.78rem">
+                <i class="fas fa-download"></i> CSV
+              </a>
+              {% else %}<span style="color:var(--muted)">—</span>{% endif %}
+            </td>
+            {% if session.role == 'admin' %}
+            <td>
+              <a href="/sessions/delete/{{ s.id }}" class="btn btn-red"
+                 style="padding:5px 10px;font-size:.78rem"
+                 onclick="return confirm('Delete session {{ s.session_name }}?')">
+                <i class="fas fa-trash"></i>
+              </a>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:40px">
+            {% if f_year or f_month or f_date or f_status %}No sessions found for selected filter.{% else %}No sessions yet.{% endif %}
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

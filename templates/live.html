@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Live Count — {{ sess.session_name }}{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <h1>
+        <i class="fas fa-circle" style="color:var(--red);animation:blink 1s infinite"></i>
+        {{ sess.session_name }}
+      </h1>
+      <p style="color:var(--muted)">Session #{{ sess.id }} — {{ sess.source_type }}</p>
+    </div>
+    <a href="/dashboard" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Dashboard</a>
+  </div>
+
+  <div class="stats-grid" style="margin-bottom:20px">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#10b98120"><i class="fas fa-boxes" style="color:#10b981"></i></div>
+      <div><div class="stat-val" style="color:#10b981" id="stat-total">0</div><div class="stat-lbl">Total Bags</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#3b82f620"><i class="fas fa-arrow-down" style="color:#3b82f6"></i></div>
+      <div><div class="stat-val" style="color:#3b82f6" id="stat-in">0</div><div class="stat-lbl">Loaded IN</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#f59e0b20"><i class="fas fa-arrow-up" style="color:#f59e0b"></i></div>
+      <div><div class="stat-val" style="color:#f59e0b" id="stat-out">0</div><div class="stat-lbl">Unloaded OUT</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#6b728020">
+        <i class="fas fa-circle" style="color:#9ca3af" id="status-icon"></i>
+      </div>
+      <div>
+        <div class="stat-val" style="color:#9ca3af;font-size:1rem" id="stat-status">Starting...</div>
+        <div class="stat-lbl">Status</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="card-title">
+      <i class="fas fa-spinner fa-spin" style="color:var(--cyan)"></i>
+      Video window is launching automatically...
+    </div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px">
+      A video window should open on your screen in a few seconds.
+      Counts below update live as bags are detected.
+    </p>
+    <div style="background:#111827;border-radius:9px;padding:14px;font-size:.85rem;color:var(--muted)">
+      <i class="fas fa-keyboard" style="color:var(--cyan)"></i>
+      <strong style="color:var(--text)"> Video window controls:</strong> &nbsp;
+      <kbd style="background:#1e293b;padding:2px 8px;border-radius:4px;color:var(--cyan)">W</kbd> line up &nbsp;
+      <kbd style="background:#1e293b;padding:2px 8px;border-radius:4px;color:var(--cyan)">S</kbd> line down &nbsp;
+      <kbd style="background:#1e293b;padding:2px 8px;border-radius:4px;color:var(--cyan)">R</kbd> reset &nbsp;
+      <kbd style="background:#1e293b;padding:2px 8px;border-radius:4px;color:var(--red)">Q</kbd> quit & save
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+kbd{font-family:monospace;font-size:.85rem;}
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+const sessionId = {{ sess.id }};
+function pollStats() {
+  fetch('/api/session-stats/' + sessionId)
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('stat-total').textContent = data.total;
+      document.getElementById('stat-in').textContent    = data.count_in;
+      document.getElementById('stat-out').textContent   = data.count_out;
+      if (data.status === 'done') {
+        document.getElementById('stat-status').textContent = 'Done!';
+        document.getElementById('stat-status').style.color = '#10b981';
+        document.getElementById('status-icon').style.color = '#10b981';
+        document.getElementById('card-title').innerHTML =
+          '<i class="fas fa-check-circle" style="color:var(--green)"></i> Session complete!';
+        clearInterval(poller);
+      } else {
+        document.getElementById('stat-status').textContent = 'Running';
+        document.getElementById('stat-status').style.color = '#3b82f6';
+        document.getElementById('status-icon').style.color = '#3b82f6';
+      }
+    }).catch(()=>{});
+}
+const poller = setInterval(pollStats, 2000);
+pollStats();
+</script>
+{% endblock %}

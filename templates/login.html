@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login — BagCounter Pro</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#f1f5f9;
+     min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-wrap{width:100%;max-width:420px;padding:20px;}
+.logo{text-align:center;margin-bottom:32px;}
+.logo i{font-size:2.5rem;color:#06b6d4;}
+.logo h1{font-size:1.5rem;font-weight:800;margin-top:10px;}
+.logo p{color:#94a3b8;font-size:.875rem;margin-top:4px;}
+.card{background:#1a1d2e;border:1px solid #2d3748;border-radius:16px;padding:32px;}
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:.85rem;color:#94a3b8;margin-bottom:7px;font-weight:500;}
+.input-wrap{position:relative;}
+.input-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#4b5563;}
+.form-control{width:100%;padding:11px 14px 11px 38px;background:#111827;
+              border:1px solid #2d3748;border-radius:9px;color:#f1f5f9;
+              font-size:.9rem;outline:none;transition:.2s;}
+.form-control:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #3b82f620;}
+.btn{width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;
+     border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;
+     margin-top:6px;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn:hover{background:#2563eb;transform:translateY(-1px);}
+.links{text-align:center;margin-top:20px;font-size:.85rem;color:#94a3b8;}
+.links a{color:#3b82f6;}
+.alert{padding:11px 15px;border-radius:9px;margin-bottom:16px;font-size:.85rem;
+       display:flex;align-items:center;gap:9px;}
+.alert-error{background:#ef444420;border:1px solid #ef444440;color:#fca5a5;}
+.alert-success{background:#10b98120;border:1px solid #10b98140;color:#6ee7b7;}
+.alert-info{background:#3b82f620;border:1px solid #3b82f640;color:#93c5fd;}
+.default-creds{background:#1e293b;border:1px solid #334155;border-radius:8px;
+               padding:10px 14px;margin-bottom:18px;font-size:.8rem;color:#94a3b8;}
+.default-creds span{color:#06b6d4;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="logo">
+    <i class="fas fa-train"></i>
+    <h1>BagCounter Pro</h1>
+    <p>Train Cargo Management System</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}">
+        <i class="fas fa-{% if cat=='error' %}exclamation-circle{% elif cat=='success' %}check-circle{% else %}info-circle{% endif %}"></i>
+        {{ msg }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="card">
+    <div class="default-creds">
+      <i class="fas fa-info-circle"></i>
+      Default admin — Username: <span>admin</span> / Password: <span>admin123</span>
+    </div>
+
+    <form method="POST">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-wrap">
+          <i class="fas fa-user"></i>
+          <input name="username" class="form-control" placeholder="Enter username" required autofocus/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock"></i>
+          <input name="password" type="password" class="form-control" placeholder="Enter password" required/>
+        </div>
+      </div>
+      <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+    </form>
+
+    <div class="links">
+      <a href="/forgot-password"><i class="fas fa-key"></i> Forgot Password?</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

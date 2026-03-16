@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — BagCounter Pro{% endblock %}
+{% block content %}
+<div class="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}"><i class="fas fa-info-circle"></i> {{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="page-header">
+    <h1><i class="fas fa-chart-line" style="color:var(--cyan)"></i> Dashboard</h1>
+    <p>Welcome back, <strong>{{ session.username }}</strong>!</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#10b98120"><i class="fas fa-boxes" style="color:#10b981"></i></div>
+      <div><div class="stat-val" style="color:#10b981">{{ total_bags }}</div><div class="stat-lbl">Total Bags Counted</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#3b82f620"><i class="fas fa-calendar-day" style="color:#3b82f6"></i></div>
+      <div><div class="stat-val" style="color:#3b82f6">{{ today_bags }}</div><div class="stat-lbl">Bags Today</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#8b5cf620"><i class="fas fa-film" style="color:#8b5cf6"></i></div>
+      <div><div class="stat-val" style="color:#8b5cf6">{{ total_sessions }}</div><div class="stat-lbl">Total Sessions</div></div>
+    </div>
+    {% if session.role in ['admin','operator'] %}
+    <div class="stat-card" style="cursor:pointer" onclick="location.href='/count'">
+      <div class="stat-icon" style="background:#f59e0b20"><i class="fas fa-plus-circle" style="color:#f59e0b"></i></div>
+      <div><div class="stat-val" style="color:#f59e0b;font-size:1.2rem">START</div><div class="stat-lbl">New Session</div></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Filters -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><i class="fas fa-filter" style="color:var(--orange)"></i> Filter Sessions</div>
+    <form method="GET" action="/dashboard" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <label class="form-label">Year</label>
+        <select name="year" class="form-control" style="width:120px">
+          <option value="">All Years</option>
+          {% for y in years %}
+          <option value="{{ y }}" {% if f_year==y %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Month</label>
+        <select name="month" class="form-control" style="width:140px">
+          <option value="">All Months</option>
+          {% for m in [('01','January'),('02','February'),('03','March'),('04','April'),
+                       ('05','May'),('06','June'),('07','July'),('08','August'),
+                       ('09','September'),('10','October'),('11','November'),('12','December')] %}
+          <option value="{{ m[0] }}" {% if f_month==m[0] or f_month==m[0].lstrip('0') %}selected{% endif %}>{{ m[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Specific Date</label>
+        <input type="date" name="date" class="form-control" style="width:160px" value="{{ f_date }}"/>
+      </div>
+      <button type="submit" class="btn btn-blue"><i class="fas fa-search"></i> Filter</button>
+      {% if f_year or f_month or f_date %}
+      <a href="/dashboard" class="btn btn-ghost"><i class="fas fa-times"></i> Clear</a>
+      {% endif %}
+    </form>
+    {% if f_year or f_month or f_date %}
+    <div style="margin-top:10px;font-size:.83rem;color:var(--cyan)">
+      <i class="fas fa-info-circle"></i>
+      Showing filtered results
+      {% if f_date %}for <strong>{{ f_date }}</strong>
+      {% elif f_year and f_month %}for <strong>{{ f_month }}/{{ f_year }}</strong>
+      {% elif f_year %}for year <strong>{{ f_year }}</strong>
+      {% elif f_month %}for month <strong>{{ f_month }}</strong>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Sessions -->
+  <div class="card">
+    <div class="card-title">
+      <i class="fas fa-history" style="color:var(--cyan)"></i> Sessions
+      <a href="/reports" class="btn btn-ghost" style="margin-left:auto;font-size:.8rem;padding:6px 14px">
+        View All <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Session Name</th><th>Source</th><th>User</th><th>Total</th><th>IN</th><th>OUT</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          {% for s in sessions %}
+          <tr>
+            <td><strong>{{ s.session_name }}</strong></td>
+            <td><span style="color:var(--muted);font-size:.82rem"><i class="fas fa-{% if s.source_type=='video' %}film{% else %}video{% endif %}"></i> {{ s.source_type }}</span></td>
+            <td>{{ s.username }}</td>
+            <td><strong style="color:var(--green)">{{ s.total_count }}</strong></td>
+            <td style="color:var(--blue)">{{ s.count_in }}</td>
+            <td style="color:var(--orange)">{{ s.count_out }}</td>
+            <td>
+              <span class="badge" style="{% if s.status=='done' %}background:#10b98120;color:#6ee7b7;border:1px solid #10b98140{% else %}background:#3b82f620;color:#93c5fd;border:1px solid #3b82f640{% endif %}">
+                {{ s.status }}
+              </span>
+            </td>
+            <td style="color:var(--muted);font-size:.82rem">{{ s.started_at }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:40px">
+            {% if f_year or f_month or f_date %}No sessions found for selected filter.{% else %}No sessions yet — <a href="/count" style="color:var(--blue)">Start counting!</a>{% endif %}
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

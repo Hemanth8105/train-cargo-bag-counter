@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}Train Cargo Bag Counter{% endblock %}</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0f1117;--card:#1a1d2e;--nav:#111827;
+  --blue:#3b82f6;--green:#10b981;--orange:#f59e0b;
+  --red:#ef4444;--purple:#8b5cf6;--cyan:#06b6d4;
+  --text:#f1f5f9;--muted:#94a3b8;--border:#2d3748;
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* NAV */
+nav{background:var(--nav);padding:0 24px;display:flex;align-items:center;
+    justify-content:space-between;height:60px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:100;}
+.nav-brand{font-size:1.1rem;font-weight:700;color:var(--cyan);display:flex;align-items:center;gap:8px;}
+.nav-links{display:flex;align-items:center;gap:4px;}
+.nav-links a{padding:8px 14px;border-radius:8px;font-size:0.88rem;color:var(--muted);
+             display:flex;align-items:center;gap:6px;transition:.2s;}
+.nav-links a:hover,.nav-links a.active{background:var(--border);color:var(--text);}
+.nav-user{display:flex;align-items:center;gap:10px;font-size:0.85rem;}
+.badge{padding:3px 10px;border-radius:99px;font-size:0.72rem;font-weight:700;text-transform:uppercase;}
+.badge-admin{background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed44;}
+.badge-operator{background:#0891b222;color:#67e8f9;border:1px solid #0891b244;}
+.badge-viewer{background:#05966922;color:#6ee7b7;border:1px solid #05966944;}
+
+/* MAIN */
+.main{padding:28px 32px;max-width:1300px;margin:0 auto;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;}
+.card-title{font-size:1rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+           padding:20px;display:flex;align-items:center;gap:16px;}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;
+           justify-content:center;font-size:1.3rem;}
+.stat-val{font-size:1.8rem;font-weight:800;line-height:1;}
+.stat-lbl{font-size:0.78rem;color:var(--muted);margin-top:4px;}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border-radius:9px;border:none;cursor:pointer;
+     font-size:0.88rem;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.2s;}
+.btn:hover{opacity:.85;transform:translateY(-1px);}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-orange{background:var(--orange);color:#000;}
+.btn-ghost{background:var(--border);color:var(--text);}
+
+/* FORMS */
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:7px;font-weight:500;}
+.form-control{width:100%;padding:10px 14px;background:#111827;border:1px solid var(--border);
+              border-radius:9px;color:var(--text);font-size:0.9rem;transition:.2s;outline:none;}
+.form-control:focus{border-color:var(--blue);box-shadow:0 0 0 3px #3b82f620;}
+select.form-control option{background:#1a1d2e;}
+.form-hint{font-size:0.78rem;color:var(--muted);margin-top:5px;}
+
+/* ALERTS */
+.alert{padding:12px 16px;border-radius:9px;margin-bottom:16px;font-size:0.88rem;
+       display:flex;align-items:center;gap:10px;}
+.alert-error{background:#ef444420;border:1px solid #ef444440;color:#fca5a5;}
+.alert-success{background:#10b98120;border:1px solid #10b98140;color:#6ee7b7;}
+.alert-info{background:#3b82f620;border:1px solid #3b82f640;color:#93c5fd;}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+th{padding:11px 14px;text-align:left;color:var(--muted);font-weight:600;
+   border-bottom:1px solid var(--border);background:#111827;}
+td{padding:11px 14px;border-bottom:1px solid #1e2433;}
+tr:hover td{background:#1e2433;}
+
+/* TOGGLE */
+.toggle{position:relative;display:inline-block;width:44px;height:24px;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;inset:0;background:#374151;border-radius:99px;transition:.3s;}
+.slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;
+               background:white;border-radius:50%;transition:.3s;}
+input:checked+.slider{background:var(--green);}
+input:checked+.slider:before{transform:translateX(20px);}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:24px;}
+.page-header h1{font-size:1.5rem;font-weight:800;}
+.page-header p{color:var(--muted);font-size:0.88rem;margin-top:4px;}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if session.user_id %}
+<nav>
+  <div class="nav-brand"><i class="fas fa-train"></i> BagCounter Pro</div>
+  <div class="nav-links">
+    <a href="/dashboard" {% if request.path=='/dashboard' %}class="active"{% endif %}>
+      <i class="fas fa-chart-line"></i> Dashboard</a>
+    {% if session.role in ['admin','operator'] %}
+    <a href="/count" {% if request.path=='/count' %}class="active"{% endif %}>
+      <i class="fas fa-play-circle"></i> Count</a>
+    {% endif %}
+    <a href="/reports" {% if request.path=='/reports' %}class="active"{% endif %}>
+      <i class="fas fa-file-csv"></i> Reports</a>
+    {% if session.role == 'admin' %}
+    <a href="/users" {% if request.path=='/users' %}class="active"{% endif %}>
+      <i class="fas fa-users"></i> Users</a>
+    {% endif %}
+  </div>
+  <div class="nav-user">
+    <span class="badge badge-{{ session.role }}">{{ session.role }}</span>
+    <span>{{ session.username }}</span>
+    <a href="/change-password" style="color:var(--muted);font-size:.85rem;">
+      <i class="fas fa-key"></i></a>
+    <a href="/logout" style="color:var(--red);font-size:.85rem;">
+      <i class="fas fa-sign-out-alt"></i></a>
+  </div>
+</nav>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<script>
+// Auto-hide alerts
+setTimeout(()=>{
+  document.querySelectorAll('.alert').forEach(a=>{
+    a.style.transition='opacity .5s';a.style.opacity='0';
+    setTimeout(()=>a.remove(),500);
+  });
+},4000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

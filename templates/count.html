@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}New Count Session{% endblock %}
+{% block content %}
+<div class="main">
+  <div class="page-header">
+    <h1><i class="fas fa-play-circle" style="color:var(--green)"></i> New Counting Session</h1>
+    <p>Configure your source and options then start counting.</p>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- LEFT: Source -->
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title"><i class="fas fa-cog" style="color:var(--blue)"></i> Session Info</div>
+        <div class="form-group">
+          <label class="form-label">Session Name</label>
+          <input name="session_name" class="form-control"
+                 placeholder="e.g. Wagon-12 Morning Shift"
+                 value="Session_{{ now }}"/>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title"><i class="fas fa-film" style="color:var(--purple)"></i> Input Source</div>
+
+        <!-- Source type tabs -->
+        <div style="display:flex;gap:8px;margin-bottom:18px">
+          <button type="button" id="tab-video" onclick="switchTab('video')"
+            style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--blue);
+                   background:#3b82f620;color:var(--blue);font-weight:700;cursor:pointer">
+            <i class="fas fa-film"></i> Upload Video
+          </button>
+          <button type="button" id="tab-live" onclick="switchTab('live')"
+            style="flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);
+                   background:transparent;color:var(--muted);font-weight:700;cursor:pointer">
+            <i class="fas fa-video"></i> Live Camera
+          </button>
+        </div>
+        <input type="hidden" name="source_type" id="source_type" value="video"/>
+
+        <!-- Video upload -->
+        <div id="video-panel">
+          <div class="form-group">
+            <label class="form-label">Video File</label>
+            <input name="video_file" type="file" class="form-control"
+                   accept=".mp4,.avi,.mov,.mkv"/>
+            <div class="form-hint">Supported: MP4, AVI, MOV, MKV</div>
+          </div>
+        </div>
+
+        <!-- Live RTSP -->
+        <div id="live-panel" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Camera / RTSP URL</label>
+            <input name="rtsp_url" class="form-control"
+                   placeholder="rtsp://user:pass@192.168.1.100:554/stream"/>
+            <div class="form-hint">Or use 0 for webcam</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Settings -->
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title"><i class="fas fa-sliders-h" style="color:var(--orange)"></i> Detection Settings</div>
+
+        <div class="form-group">
+          <label class="form-label">Counting Line Position — <span id="line-val">16%</span></label>
+          <input type="range" name="line_pos" min="0.05" max="0.95" step="0.01" value="0.16"
+                 style="width:100%;accent-color:var(--cyan)"
+                 oninput="document.getElementById('line-val').textContent=Math.round(this.value*100)+'%'"/>
+          <div class="form-hint">Adjustable live with W / S keys after starting</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confidence Threshold — <span id="conf-val">0.60</span></label>
+          <input type="range" name="conf_thresh" min="0.10" max="0.90" step="0.01" value="0.60"
+                 style="width:100%;accent-color:var(--blue)"
+                 oninput="document.getElementById('conf-val').textContent=parseFloat(this.value).toFixed(2)"/>
+          <div class="form-hint">Lower = detect more | Higher = detect only confident bags</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title"><i class="fas fa-save" style="color:var(--green)"></i> Output Options</div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:12px;background:#111827;border-radius:9px;margin-bottom:10px">
+          <div>
+            <div style="font-weight:600;font-size:.9rem">Save Output Video</div>
+            <div style="font-size:.78rem;color:var(--muted)">Saves annotated MP4 — slight FPS impact</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" name="save_video" id="save_video" onchange="toggleVideoNote()"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="video-note" style="font-size:.78rem;color:var(--orange);padding:0 4px;margin-bottom:10px">
+          ⚡ Video saving OFF — maximum performance
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:12px;background:#111827;border-radius:9px">
+          <div>
+            <div style="font-weight:600;font-size:.9rem">Save CSV Report</div>
+            <div style="font-size:.78rem;color:var(--muted)">Recommended — logs every bag with timestamp</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" name="save_csv" checked/>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-green" style="width:100%;padding:14px;font-size:1rem">
+        <i class="fas fa-play"></i> START COUNTING
+      </button>
+    </div>
+
+  </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function switchTab(tab){
+  document.getElementById('source_type').value=tab;
+  document.getElementById('video-panel').style.display=tab=='video'?'block':'none';
+  document.getElementById('live-panel').style.display=tab=='live'?'block':'none';
+  document.getElementById('tab-video').style.borderColor=tab=='video'?'var(--blue)':'var(--border)';
+  document.getElementById('tab-video').style.color=tab=='video'?'var(--blue)':'var(--muted)';
+  document.getElementById('tab-video').style.background=tab=='video'?'#3b82f620':'transparent';
+  document.getElementById('tab-live').style.borderColor=tab=='live'?'var(--blue)':'var(--border)';
+  document.getElementById('tab-live').style.color=tab=='live'?'var(--blue)':'var(--muted)';
+  document.getElementById('tab-live').style.background=tab=='live'?'#3b82f620':'transparent';
+}
+function toggleVideoNote(){
+  const on=document.getElementById('save_video').checked;
+  document.getElementById('video-note').innerHTML=on
+    ?'💾 Video will be saved — slight FPS impact'
+    :'⚡ Video saving OFF — maximum performance';
+  document.getElementById('video-note').style.color=on?'var(--blue)':'var(--orange)';
+}
+</script>
+{% endblock %}
